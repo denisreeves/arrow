@@ -1237,6 +1237,28 @@ if __name__ == '__main__':
             ))
             conn.commit()
         print("Default admin user created: admin@example.com / admin123")
+    import sqlite3
+    import os
     
+    DATABASE_PATH = os.environ.get("DATABASE_URL", "data/users.db")
+    
+    def init_db():
+        """Create the database tables if they don’t exist."""
+        with sqlite3.connect(DATABASE_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            ''')
+            conn.commit()
+        print("✅ Database initialized successfully!")
+    
+    # Run this when the app starts
+    init_db()
     # Run the app
     app.run(debug=True)
