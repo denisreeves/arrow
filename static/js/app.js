@@ -106,7 +106,6 @@ document.getElementById('statistics-tab-btn')?.addEventListener('click', functio
     showTab('statistics-tab');
     loadStatistics(); // Fetch data when the tab is clicked
 });
-s
 
 // Setup login page functionality
 function setupLoginPage() {
