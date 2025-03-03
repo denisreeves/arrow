@@ -1,0 +1,1208 @@
+<!-- templates/admin_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Email Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: none;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0,0,0,0.125);
+        }
+        .action-btn {
+            cursor: pointer;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .dashboard-header {
+            margin-bottom: 1.5rem;
+        }
+        .tab-pane {
+            padding: 20px 0;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-shield-lock"></i> Admin Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="users-tab-btn">
+                            <i class="bi bi-people"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="email-lists-tab-btn">
+                            <i class="bi bi-envelope"></i> Email Lists
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="statistics-tab-btn">
+                            <i class="bi bi-graph-up"></i> Statistics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" target="_blank">
+                            <i class="bi bi-box-arrow-up-right"></i> Main Site
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logout-btn">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div id="alert-container"></div>
+        
+        <!-- Users Tab Content -->
+        <div id="users-tab" class="tab-content active">
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <h3>User Management</h3>
+                <div>
+                    <button class="btn btn-success me-2" id="create-user-btn">
+                        <i class="bi bi-person-plus"></i> Add User
+                    </button>
+                    <button class="btn btn-primary" id="refresh-users-btn">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Users</h5>
+                            <div class="input-group" style="max-width: 300px;">
+                                <input type="text" class="form-control" id="user-search" placeholder="Search users...">
+                                <button class="btn btn-outline-secondary" type="button" id="search-btn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="users-table-container">
+                                <div class="loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Lists Tab Content (placeholder) -->
+        <!-- Email Lists Tab Content -->
+<div id="email-lists-tab" class="tab-content" style="display: none;">
+    <div class="dashboard-header d-flex justify-content-between align-items-center">
+        <h3>Email Lists Management</h3>
+        <div>
+            <button class="btn btn-success me-2" id="upload-email-list-btn">
+                <i class="bi bi-upload"></i> Upload Email List
+            </button>
+            <button class="btn btn-primary" id="refresh-email-lists-btn">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">All Email Lists</h5>
+                </div>
+                <div class="card-body">
+                    <div id="email-lists-table-container">
+                        <div class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        
+        <!-- Statistics Tab Content (placeholder) -->
+        <div id="statistics-tab" class="tab-content" style="display: none;">
+            <div class="dashboard-header">
+                <h3>System Statistics</h3>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-center text-muted">Statistics dashboard will be implemented in future updates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-user-form">
+                        <div class="mb-3">
+                            <label for="create-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="create-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="create-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="create-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="create-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="create-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="create-confirm-password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="create-confirm-password" required>
+                            <div class="invalid-feedback" id="password-match-error">
+                                Passwords do not match
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="save-new-user-btn">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-user-form">
+                        <div class="mb-3">
+                            <label for="edit-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="edit-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-new-password" class="form-label">New Password (leave blank to keep current)</label>
+                            <input type="password" class="form-control" id="edit-new-password">
+                        </div>
+                        <input type="hidden" id="edit-user-id">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="update-user-btn">Update User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this user? This action cannot be undone.
+                    <p class="mt-2 fw-bold" id="delete-user-name"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Statistics Tab Content -->
+<!-- Statistics Tab Content -->
+<div id="statistics-tab" class="tab-content" style="display: none;">
+    <div class="dashboard-header">
+        <h3>System Statistics</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div id="statistics-container">
+                        <div class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Email Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="email-stats-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">User Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="user-stats-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Check if admin is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminToken = localStorage.getItem('adminToken');
+            if (!adminToken) {
+                window.location.href = '/admin';
+                return;
+            }
+
+            // Load users data
+            loadUsers();
+
+            // Setup tab navigation
+            document.getElementById('users-tab-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                showTab('users-tab');
+            });
+            
+            document.getElementById('email-lists-tab-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                showTab('email-lists-tab');
+            });
+            
+            document.getElementById('statistics-tab-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                showTab('statistics-tab');
+            });
+
+            // Setup other event listeners
+            document.getElementById('refresh-users-btn').addEventListener('click', loadUsers);
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('create-user-btn').addEventListener('click', showCreateUserModal);
+            document.getElementById('save-new-user-btn').addEventListener('click', createUser);
+            document.getElementById('update-user-btn').addEventListener('click', updateUser);
+            
+            // Search functionality
+            document.getElementById('search-btn').addEventListener('click', searchUsers);
+            document.getElementById('user-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchUsers();
+                }
+            });
+            
+            // Password confirmation validation
+            document.getElementById('create-confirm-password').addEventListener('input', validatePasswordMatch);
+        });
+
+        // Show the selected tab
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show the selected tab
+            document.getElementById(tabId).style.display = 'block';
+            
+            // Add active class to the clicked tab button
+            if (tabId === 'users-tab') {
+                document.getElementById('users-tab-btn').classList.add('active');
+            } else if (tabId === 'email-lists-tab') {
+                document.getElementById('email-lists-tab-btn').classList.add('active');
+            } else if (tabId === 'statistics-tab') {
+                document.getElementById('statistics-tab-btn').classList.add('active');
+            }
+        }
+
+        // Validate password match
+        function validatePasswordMatch() {
+            const password = document.getElementById('create-password').value;
+            const confirmPassword = document.getElementById('create-confirm-password').value;
+            const errorElement = document.getElementById('password-match-error');
+            
+            if (confirmPassword && password !== confirmPassword) {
+                document.getElementById('create-confirm-password').classList.add('is-invalid');
+                errorElement.style.display = 'block';
+                return false;
+            } else {
+                document.getElementById('create-confirm-password').classList.remove('is-invalid');
+                errorElement.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Show create user modal
+        function showCreateUserModal() {
+            // Reset form
+            document.getElementById('create-user-form').reset();
+            
+            // Show modal
+            const createUserModal = new bootstrap.Modal(document.getElementById('createUserModal'));
+            createUserModal.show();
+        }
+
+        // Create new user
+        async function createUser() {
+            // Validate form
+            const name = document.getElementById('create-name').value;
+            const email = document.getElementById('create-email').value;
+            const password = document.getElementById('create-password').value;
+            const confirmPassword = document.getElementById('create-confirm-password').value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showAlert('danger', 'All fields are required');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showAlert('danger', 'Passwords do not match');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Hide modal
+                    const createUserModal = bootstrap.Modal.getInstance(document.getElementById('createUserModal'));
+                    createUserModal.hide();
+                    
+                    // Show success message
+                    showAlert('success', data.message);
+                    
+                    // Reload users
+                    loadUsers();
+                } else {
+                    showAlert('danger', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Failed to create user. Please try again.');
+            }
+        }
+
+        // Show edit user modal
+        function showEditUserModal(userId, name, email) {
+            // Set form values
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-email').value = email;
+            document.getElementById('edit-new-password').value = '';
+            document.getElementById('edit-user-id').value = userId;
+            
+            // Show modal
+            const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+            editUserModal.show();
+        }
+
+        // Update user
+        async function updateUser() {
+            const userId = document.getElementById('edit-user-id').value;
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+            const newPassword = document.getElementById('edit-new-password').value;
+            
+            if (!name || !email) {
+                showAlert('danger', 'Name and email are required');
+                return;
+            }
+            
+            const userData = { name, email };
+            
+            // Only include password if it's provided
+            if (newPassword) {
+                userData.password = newPassword;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData),
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Hide modal
+                    const editUserModal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                    editUserModal.hide();
+                    
+                    // Show success message
+                    showAlert('success', data.message);
+                    
+                    // Reload users
+                    loadUsers();
+                } else {
+                    showAlert('danger', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Failed to update user. Please try again.');
+            }
+        }
+
+        // Load users data
+        async function loadUsers() {
+            const tableContainer = document.getElementById('users-table-container');
+            tableContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderUsersTable(data.users);
+                } else {
+                    showAlert('danger', data.message);
+                    tableContainer.innerHTML = `<p class="text-center text-danger">${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Failed to load users. Please try again.');
+                tableContainer.innerHTML = `<p class="text-center text-danger">Failed to load users. Please try again.</p>`;
+            }
+        }
+
+        // Search users
+        function searchUsers() {
+            const searchTerm = document.getElementById('user-search').value.toLowerCase();
+            const tableRows = document.querySelectorAll('#users-table tbody tr');
+            
+            tableRows.forEach(row => {
+                const name = row.querySelector('td:first-child').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Render users table
+        function renderUsersTable(users) {
+            const tableContainer = document.getElementById('users-table-container');
+            
+            if (users.length === 0) {
+                tableContainer.innerHTML = '<p class="text-center">No users found.</p>';
+                return;
+            }
+
+            let tableHtml = `
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            users.forEach(user => {
+                const isAdmin = user.email === 'admin@example.com';
+                const createdDate = new Date(user.created_at).toLocaleString();
+                
+                tableHtml += `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            ${isAdmin ? 
+                                '<span class="badge bg-danger status-badge">Admin</span>' : 
+                                '<span class="badge bg-success status-badge">Active</span>'}
+                        </td>
+                        <td>
+                            ${isAdmin ? 
+                                '<span class="badge bg-secondary">Protected</span>' : 
+                                `<div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${user.id}" data-name="${user.name}" data-email="${user.email}">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${user.id}" data-name="${user.name}" data-email="${user.email}">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            tableContainer.innerHTML = tableHtml;
+
+            // Add event listeners to edit buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const userName = this.getAttribute('data-name');
+                    const userEmail = this.getAttribute('data-email');
+                    
+                    showEditUserModal(userId, userName, userEmail);
+                });
+            });
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const userName = this.getAttribute('data-name');
+                    const userEmail = this.getAttribute('data-email');
+                    
+                    // Set user info in the modal
+                    document.getElementById('delete-user-name').textContent = `${userName} (${userEmail})`;
+                    
+                    // Set user ID to delete button
+                    document.getElementById('confirm-delete-btn').setAttribute('data-id', userId);
+                    
+                    // Show the modal
+                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                    deleteModal.show();
+                });
+            });
+
+            // Set up delete confirmation
+            document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
+                const userId = this.getAttribute('data-id');
+                await deleteUser(userId);
+                
+                // Hide the modal
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                deleteModal.hide();
+            });
+        }
+
+        // Delete user
+        async function deleteUser(userId) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('success', data.message);
+                    // Reload users after successful deletion
+                    loadUsers();
+                } else {
+                    showAlert('danger', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Failed to delete user. Please try again.');
+            }
+        }
+
+        // Show alert message
+        function showAlert(type, message) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Auto close alert after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    bootstrap.Alert.getInstance(alert).close();
+                }
+            }, 5000);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin';
+        }
+
+// Load email lists
+async function loadEmailLists() {
+    const tableContainer = document.getElementById('email-lists-table-container');
+    tableContainer.innerHTML = `
+        <div class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/api/admin/email-lists', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderEmailListsTable(data.email_lists);
+        } else {
+            showAlert('danger', data.message);
+            tableContainer.innerHTML = `<p class="text-center text-danger">${data.message}</p>`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Failed to load email lists. Please try again.');
+        tableContainer.innerHTML = `<p class="text-center text-danger">Failed to load email lists. Please try again.</p>`;
+    }
+}
+
+// Render email lists table
+function renderEmailListsTable(emailLists) {
+    const tableContainer = document.getElementById('email-lists-table-container');
+
+    if (emailLists.length === 0) {
+        tableContainer.innerHTML = '<p class="text-center">No email lists found.</p>';
+        return;
+    }
+
+    let tableHtml = `
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="email-lists-table">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Uploaded By</th>
+                        <th>Valid Emails</th>
+                        <th>Invalid Emails</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    emailLists.forEach(list => {
+        tableHtml += `
+            <tr>
+                <td>${list.filename}</td>
+                <td>${list.user_id}</td>
+                <td>${list.valid_count}</td>
+                <td>${list.invalid_count}</td>
+                <td>${new Date(list.created_at).toLocaleString()}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary view-btn" data-id="${list.id}">
+                            <i class="bi bi-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${list.id}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    tableContainer.innerHTML = tableHtml;
+
+    // Add event listeners to view and delete buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const listId = this.getAttribute('data-id');
+            viewEmailListDetails(listId);
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const listId = this.getAttribute('data-id');
+            deleteEmailList(listId);
+        });
+    });
+}
+
+// View email list details
+async function viewEmailListDetails(listId) {
+    try {
+        const response = await fetch(`/api/admin/email-lists/${listId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Display email list details in a modal or new page
+            console.log('Email List Details:', data.email_list);
+            alert(`Email List Details:\nValid Emails: ${data.email_list.valid_emails.length}\nInvalid Emails: ${data.email_list.invalid_emails.length}`);
+        } else {
+            showAlert('danger', data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Failed to fetch email list details. Please try again.');
+    }
+}
+
+// Delete email list
+async function deleteEmailList(listId) {
+    if (confirm('Are you sure you want to delete this email list?')) {
+        try {
+            const response = await fetch(`/api/admin/email-lists/${listId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('success', data.message);
+                loadEmailLists(); // Refresh the email lists table
+            } else {
+                showAlert('danger', data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'Failed to delete email list. Please try again.');
+        }
+    }
+}
+
+// Add event listeners
+document.getElementById('refresh-email-lists-btn').addEventListener('click', loadEmailLists);
+document.getElementById('email-lists-tab-btn').addEventListener('click', function (e) {
+    e.preventDefault();
+    showTab('email-lists-tab');
+    loadEmailLists(); // Load email lists when the tab is clicked
+});
+
+// Load statistics
+async function loadStatistics() {
+    const statisticsContainer = document.getElementById('statistics-container');
+    statisticsContainer.innerHTML = `
+        <div class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/api/admin/statistics', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderStatistics(data.statistics);
+            renderCharts(data.statistics);
+        } else {
+            showAlert('danger', data.message);
+            statisticsContainer.innerHTML = `<p class="text-center text-danger">${data.message}</p>`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Failed to load statistics. Please try again.');
+        statisticsContainer.innerHTML = `<p class="text-center text-danger">Failed to load statistics. Please try again.</p>`;
+    }
+}
+
+// Render statistics
+function renderStatistics(statistics) {
+    const statisticsContainer = document.getElementById('statistics-container');
+    statisticsContainer.innerHTML = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Users</h5>
+                        <p class="card-text">${statistics.total_users}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Email Lists</h5>
+                        <p class="card-text">${statistics.total_email_lists}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Emails Sent</h5>
+                        <p class="card-text">${statistics.total_emails_sent}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Render charts
+function renderCharts(statistics) {
+    const emailStatsCtx = document.getElementById('email-stats-chart').getContext('2d');
+    const userStatsCtx = document.getElementById('user-stats-chart').getContext('2d');
+
+    // Email Statistics Chart
+    new Chart(emailStatsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Valid Emails', 'Invalid Emails'],
+            datasets: [{
+                label: 'Email Statistics',
+                data: [statistics.total_valid_emails, statistics.total_invalid_emails],
+                backgroundColor: ['#36a2eb', '#ff6384']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // User Statistics Chart
+    new Chart(userStatsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Total Users'],
+            datasets: [{
+                label: 'User Statistics',
+                data: [statistics.total_users],
+                backgroundColor: ['#4bc0c0']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Add event listeners
+document.getElementById('statistics-tab-btn').addEventListener('click', function (e) {
+    e.preventDefault();
+    showTab('statistics-tab');
+    loadStatistics(); // Load statistics when the tab is clicked
+});
+
+// Load statistics
+async function loadStatistics() {
+    const statisticsContainer = document.getElementById('statistics-container');
+    statisticsContainer.innerHTML = `
+        <div class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/api/admin/statistics', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderStatistics(data.statistics);
+            renderCharts(data.statistics);
+        } else {
+            showAlert('danger', data.message);
+            statisticsContainer.innerHTML = `<p class="text-center text-danger">${data.message}</p>`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Failed to load statistics. Please try again.');
+        statisticsContainer.innerHTML = `<p class="text-center text-danger">Failed to load statistics. Please try again.</p>`;
+    }
+}
+
+// Render statistics
+function renderStatistics(statistics) {
+    const statisticsContainer = document.getElementById('statistics-container');
+    statisticsContainer.innerHTML = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Users</h5>
+                        <p class="card-text">${statistics.total_users}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Email Lists</h5>
+                        <p class="card-text">${statistics.total_email_lists}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Emails Sent</h5>
+                        <p class="card-text">${statistics.total_emails_sent}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Render charts
+function renderCharts(statistics) {
+    const emailStatsCtx = document.getElementById('email-stats-chart').getContext('2d');
+    const userStatsCtx = document.getElementById('user-stats-chart').getContext('2d');
+
+    // Email Statistics Chart
+    new Chart(emailStatsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Valid Emails', 'Invalid Emails'],
+            datasets: [{
+                label: 'Email Statistics',
+                data: [statistics.total_valid_emails, statistics.total_invalid_emails],
+                backgroundColor: ['#36a2eb', '#ff6384']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // User Statistics Chart
+    new Chart(userStatsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Total Users'],
+            datasets: [{
+                label: 'User Statistics',
+                data: [statistics.total_users],
+                backgroundColor: ['#4bc0c0']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Add event listeners
+document.getElementById('statistics-tab-btn').addEventListener('click', function (e) {
+    e.preventDefault();
+    showTab('statistics-tab');
+    loadStatistics(); // Load statistics when the tab is clicked
+});
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    document.getElementById(tabId).style.display = 'block';
+}
+function loadStatistics() {
+    fetch('/api/statistics')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('statistics-container').innerHTML = `<p>${data.stats}</p>`;
+        })
+        .catch(error => console.error('Error loading statistics:', error));
+}
+function loadStatistics() {
+    fetch('/api/statistics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('statistics-container').innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Total Users: ${data.statistics.total_users}</h5>
+                            <h5>Total Emails Sent: ${data.statistics.total_emails}</h5>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('statistics-container').innerHTML = `<p>Error: ${data.message}</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading statistics:', error);
+            document.getElementById('statistics-container').innerHTML = `<p>Error loading statistics.</p>`;
+        });
+}
+
+// Ensure the function runs when the "Statistics" tab is clicked
+document.getElementById('statistics-tab-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    showTab('statistics-tab');
+    loadStatistics(); // Fetch data when the tab is clicked
+});
+
+    </script>
+</body>
+</html>

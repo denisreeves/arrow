@@ -1,0 +1,239 @@
+/* General Page Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    background: #1d3557;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    height: 100vh;
+}
+
+.logo {
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+.assistant-title {
+    color: #f1faee;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Container Styles */
+.container, .auth-container {
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px 0px #aaa;
+    border-radius: 10px;
+    text-align: left;
+    margin: auto;
+}
+
+.container {
+    width: 60%;
+    margin-top: 50px;
+}
+
+.auth-container {
+    width: 400px;
+    margin-top: 100px;
+}
+
+/* Headings */
+h1, h2 {
+    color: #333;
+    text-align: center;
+}
+
+/* Form Elements */
+input, textarea, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #1d3557;
+    color: white;
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+    padding: 12px;
+}
+
+button:hover {
+    background-color: #457b9d;
+}
+
+/* Email List */
+#email-list-container {
+    display: none;
+}
+
+.email-item {
+    text-align: left;
+    margin: 5px 0;
+    padding: 5px;
+    background: #e8f0fe;
+    border-radius: 5px;
+}
+
+/* User Info */
+.user-info {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.user-info p {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+#logout-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Toggle Forms */
+.toggle-form {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.toggle-form a {
+    color: #1d3557;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.toggle-form a:hover {
+    text-decoration: underline;
+}
+
+/* Error and Success Messages */
+.error-message {
+    color: #e63946;
+    margin-top: 5px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.success-message {
+    color: #2a9d8f;
+    margin-top: 5px;
+    font-size: 14px;
+    text-align: center;
+}
+/* Admin specific styles */
+.admin-container {
+    width: 80%;
+}
+
+.admin-section {
+    margin-bottom: 30px;
+}
+
+#user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#user-table th, #user-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#user-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#user-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#user-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.action-btn {
+    background-color: #1d3557;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.action-btn:hover {
+    background-color: #457b9d;
+}
+
+.delete-user {
+    background-color: #e63946;
+}
+
+.delete-user:hover {
+    background-color: #c1121f;
+}
+/* Add this to your existing styles.css */
+.data-viz-button {
+    background-color: #457b9d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    display: block;
+    transition: all 0.3s ease-in-out;
+}
+
+.data-viz-button:hover {
+    background-color: #1d3557;
+    transform: scale(1.05);
+}
+
+/* Add to existing styles.css */
+.sidebar-button {
+    background-color: #457b9d;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.sidebar-button:hover {
+    background-color: #1d3557;
+}

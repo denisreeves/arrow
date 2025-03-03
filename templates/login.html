@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+
+</head>
+<body>
+
+    <!-- Sidebar with Logo -->
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Arrow Logo" class="logo">
+        <h2 class="assistant-title">Arrow - Email Assistant ➜</h2>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="auth-container">
+        <h1>Welcome Back</h1>
+        <h2>Login to Arrow</h2>
+        <div id="login-error" class="error-message"></div>
+        <div id="login-success" class="success-message"></div>
+        
+        <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+        </div>
+        
+        <button id="login-button">Login ➜</button>
+        
+        <div class="toggle-form">
+            <span>Don't have an account? </span>
+            <a id="show-register">Register now</a>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="register-form" class="auth-container" style="display: none;">
+        <h1>Join Arrow</h1>
+        <h2>Create Your Account</h2>
+        <div id="register-error" class="error-message"></div>
+        <div id="register-success" class="success-message"></div>
+        
+        <div class="form-group">
+            <label for="register-name">Full Name</label>
+            <input type="text" id="register-name" placeholder="Enter your full name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" placeholder="Create a password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="register-confirm-password">Confirm Password</label>
+            <input type="password" id="register-confirm-password" placeholder="Confirm your password" required>
+        </div>
+        
+        <button id="register-button">Register ➜</button>
+        
+        <div class="toggle-form">
+            <span>Already have an account? </span>
+            <a id="show-login">Login instead</a>
+        </div>
+    </div>
+
+</body>
+</html>

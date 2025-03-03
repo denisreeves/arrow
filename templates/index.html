@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow - Email Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+
+</head>
+<body>
+    
+
+    <!-- Sidebar with Logo -->
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Arrow Logo" class="logo">
+        <h2 class="assistant-title">Arrow - Email Assistant ➜</h2>
+    </div>
+
+    <div class="container">
+        <h1>Arrow - Your Email Assistant ➜</h1>
+
+        <h2>Upload Your Email List ➜</h2>
+        <input type="file" id="file-upload" accept=".csv,.xlsx,.xls">
+        <small>The file must contain a column named 'email'.</small>
+
+        <div id="email-list-container">
+            <h3>Found Emails (<span id="email-count">0</span>)</h3>
+            <label><input type="checkbox" id="select-all"> Select All</label>
+            <div id="email-list"></div>
+        </div>
+
+        <h2>Configure Your Email ➜</h2>
+        <input type="email" id="sender-email" placeholder="Sender Email" required>
+        <input type="password" id="sender-password" placeholder="Sender Password" required>
+        <input type="text" id="smtp-server" value="smtp.gmail.com" required>
+        <input type="number" id="smtp-port" value="587" required>
+        <input type="text" id="email-subject" placeholder="Email Subject" required>
+        <input type="text" id="bcc-email" placeholder="BCC (comma-separated emails)">
+        <textarea id="email-body" placeholder="Write your email content here..." required></textarea>
+
+        <button id="send-emails">Send Emails ➜</button>
+
+        <h2>Generate Email Content with AI ➜</h2>
+        <textarea id="ai-prompt" placeholder="Describe what your email should be about"></textarea>
+        <button id="generate-ai">Generate Content ➜</button>
+        <div id="ai-result-container" style="display: none;">
+            <h3>Generated Email:</h3>
+            <textarea id="ai-result" readonly></textarea>
+            <button id="use-ai-content">Use This Content ➜</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+
+</body>
+</html>

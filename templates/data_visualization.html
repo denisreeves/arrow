@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #1d3557;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .assistant-title {
+            color: #f1faee;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Container Styles */
+        .container {
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px 0px #aaa;
+            border-radius: 10px;
+            text-align: left;
+            margin-left: 250px;
+            flex: 1;
+            width: 60%;
+            margin-top: 50px;
+        }
+
+        /* Headings */
+        h1, h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* Form Elements */
+        input, textarea, button, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #1d3557;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            padding: 12px;
+        }
+
+        button:hover {
+            background-color: #457b9d;
+        }
+
+        /* Custom styles for multi-select dropdown */
+        .dropdown-checkbox {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 10px;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .dropdown-checkbox label {
+            display: block;
+            padding: 8px;
+            cursor: pointer;
+        }
+        
+        .dropdown-checkbox label:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .selected-headers {
+            margin-top: 10px;
+        }
+        
+        .selected-headers span {
+            display: inline-block;
+            background-color: #e8f0fe;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        
+        .selected-headers span .remove-btn {
+            margin-left: 5px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        #results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        #results-table th, #results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        #results-table th {
+            background-color: #f2f2f2;
+        }
+        
+        #results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        #results-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .controls {
+            margin: 15px 0;
+        }
+        
+        .filter-section {
+            margin-top: 20px;
+        }
+        
+        .filter-section h3 {
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+            color: #1d3557;
+        }
+        
+        .search-btn, .download-btn {
+            background-color: #1d3557;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .download-btn {
+            background-color: #457b9d;
+        }
+        
+        .search-btn:hover {
+            background-color: #457b9d;
+            transform: scale(1.05);
+        }
+        
+        .download-btn:hover {
+            background-color: #1d3557;
+            transform: scale(1.05);
+        }
+        
+        .header-select-all {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 500px; /* Added max height for large datasets */
+        }
+        
+        /* Sidebar button */
+        .sidebar-button {
+            background-color: #457b9d;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+        
+        .sidebar-button:hover {
+            background-color: #1d3557;
+        }
+        
+        /* Numeric filter styles */
+        .numeric-filter {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .filter-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        select.numeric-column-select {
+            margin-bottom: 15px;
+        }
+
+        /* Error and Success Messages */
+        .error-message {
+            color: #e63946;
+            margin-top: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .success-message {
+            color: #2a9d8f;
+            margin-top: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        /* Text search filter styles */
+        .text-search-filter {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .text-search-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .text-search-container select {
+            flex: 1;
+        }
+        
+        .text-search-container input {
+            flex: 2;
+        }
+
+        /* Pagination controls */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+        }
+        
+        .pagination-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pagination-btn {
+            background-color: #1d3557;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .pagination-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .rows-per-page {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rows-per-page select {
+            width: auto;
+            padding: 5px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar with Logo and Back Button -->
+    <div class="sidebar">
+        <h2 class="assistant-title">Arrow - Data Visualization ➜</h2>
+        <button id="back-to-arrow-button" class="sidebar-button">Back to Arrow</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1>Data Visualization</h1>
+        
+        <!-- File Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Your Data (CSV/Excel)</h2>
+            <input type="file" id="file-upload" accept=".csv,.xlsx,.xls">
+            <small>Upload a CSV or Excel file to visualize data.</small>
+            <div id="loading" class="loading">Processing file...</div>
+            <div id="file-error" class="error-message"></div>
+        </div>
+
+        <!-- Dropdown Menu for Headers -->
+        <div id="dropdown-container" class="filter-section" style="display: none;">
+            <h3>Select Columns to Display</h3>
+            <div class="controls">
+                <button id="header-dropdown-button" class="search-btn">Select Columns</button>
+            </div>
+            <div id="header-dropdown" class="dropdown-checkbox">
+                <div class="header-select-all">
+                    <label>
+                        <input type="checkbox" id="select-all-headers"> Select All
+                    </label>
+                </div>
+                <hr>
+                <div id="header-options">
+                    <!-- Headers will be dynamically added here -->
+                </div>
+            </div>
+            <div class="selected-headers" id="selected-headers">
+                <!-- Selected headers will be displayed here -->
+            </div>
+            
+            <!-- Text Search Filter Section -->
+            <div id="text-search-filter" class="text-search-filter" style="display: none;">
+                <h3>Search by Text</h3>
+                <div class="text-search-container">
+                    <select id="text-column-select">
+                        <option value="">Select a column to search</option>
+                        <!-- Text columns will be added here -->
+                    </select>
+                    <input type="text" id="text-search-input" placeholder="Enter search term...">
+                </div>
+            </div>
+            
+            <!-- Numeric Filter Section -->
+            <div id="numeric-filter" class="numeric-filter" style="display: none;">
+                <h3>Filter by Numeric Value</h3>
+                <select id="numeric-column-select" class="numeric-column-select">
+                    <option value="">Select a numeric column</option>
+                    <!-- Numeric columns will be added here -->
+                </select>
+                
+                <div id="slider-container" class="slider-container" style="display: none;">
+                    <div class="slider-labels">
+                        <span>Min</span>
+                        <span>Max</span>
+                    </div>
+                    <input type="range" id="numeric-slider" min="0" max="100" value="0">
+                    <div class="range-values">
+                        <span id="min-value">0</span>
+                        <span id="current-value">0</span>
+                        <span id="max-value">100</span>
+                    </div>
+                    <div class="filter-info">
+                        Filter will show rows where selected column value ≤ <span id="slider-value">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="search-data-button" class="search-btn" style="display: none;">Search Data</button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-container" style="display: none;">
+            <h3>Results</h3>
+            <div id="results-info"></div>
+            <div class="controls">
+                <button id="download-results-button" class="download-btn">Download Results as Excel</button>
+            </div>
+            
+            <!-- Pagination controls -->
+            <div class="pagination-controls">
+                <div class="pagination-info">
+                    Showing <span id="page-start">0</span> - <span id="page-end">0</span> of <span id="total-records">0</span> records
+                </div>
+                <div class="pagination-buttons">
+                    <button id="prev-page" class="pagination-btn" disabled>Previous</button>
+                    <button id="next-page" class="pagination-btn" disabled>Next</button>
+                </div>
+                <div class="rows-per-page">
+                    Rows per page: 
+                    <select id="rows-per-page">
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="results-table">
+                    <thead>
+                        <tr id="results-headers"></tr>
+                    </thead>
+                    <tbody id="results-rows"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedHeaders = [];
+        let allHeaders = [];
+        let fileData = [];
+        let numericColumns = [];
+        let textColumns = [];
+        let filteredData = []; // Store filtered data
+        let displayedData = []; // Store currently displayed data for download
+        let sliderValue = 0;
+        let selectedNumericColumn = "";
+        let selectedTextColumn = "";
+        let textSearchValue = "";
+        let columnMinMax = {};
+        
+        // Pagination variables
+        let currentPage = 1;
+        let rowsPerPage = 20;
+        let totalPages = 0;
+        
+        // DOM elements
+        const fileUpload = document.getElementById('file-upload');
+        const fileError = document.getElementById('file-error');
+        const loadingIndicator = document.getElementById('loading');
+        const dropdownContainer = document.getElementById('dropdown-container');
+        const headerDropdown = document.getElementById('header-dropdown');
+        const headerDropdownButton = document.getElementById('header-dropdown-button');
+        const selectAllCheckbox = document.getElementById('select-all-headers');
+        const headerOptions = document.getElementById('header-options');
+        const selectedHeadersContainer = document.getElementById('selected-headers');
+        const searchDataButton = document.getElementById('search-data-button');
+        const resultsContainer = document.getElementById('results-container');
+        const resultsInfo = document.getElementById('results-info');
+        const resultsHeaders = document.getElementById('results-headers');
+        const resultsRows = document.getElementById('results-rows');
+        const downloadButton = document.getElementById('download-results-button');
+        const numericFilter = document.getElementById('numeric-filter');
+        const numericColumnSelect = document.getElementById('numeric-column-select');
+        const sliderContainer = document.getElementById('slider-container');
+        const numericSlider = document.getElementById('numeric-slider');
+        const minValue = document.getElementById('min-value');
+        const maxValue = document.getElementById('max-value');
+        const currentValue = document.getElementById('current-value');
+        const sliderValueDisplay = document.getElementById('slider-value');
+        const textSearchFilter = document.getElementById('text-search-filter');
+        const textColumnSelect = document.getElementById('text-column-select');
+        const textSearchInput = document.getElementById('text-search-input');
+        
+        // Pagination elements
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const pageStart = document.getElementById('page-start');
+        const pageEnd = document.getElementById('page-end');
+        const totalRecords = document.getElementById('total-records');
+        const rowsPerPageSelect = document.getElementById('rows-per-page');
+
+        // Load required libraries for Excel parsing
+        const sheetJsScript = document.createElement('script');
+        sheetJsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        document.head.appendChild(sheetJsScript);
+
+        // Handle pagination
+        prevPageBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPagedResults();
+            }
+        });
+        
+        nextPageBtn.addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayPagedResults();
+            }
+        });
+        
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page
+            totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            displayPagedResults();
+        });
+
+        // Handle file upload
+        fileUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Clear error message
+            fileError.textContent = '';
+            fileError.style.display = 'none';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Check file type
+            const fileType = file.name.split('.').pop().toLowerCase();
+            
+            if (fileType === 'csv') {
+                // Process CSV file
+                processCSVFile(file);
+            } else if (fileType === 'xlsx' || fileType === 'xls') {
+                // Process Excel file
+                processExcelFile(file);
+            } else {
+                loadingIndicator.style.display = 'none';
+                fileError.textContent = 'Unsupported file type. Please upload a CSV, XLS, or XLSX file.';
+                fileError.style.display = 'block';
+            }
+        });
+
+        // Process CSV file
+        function processCSVFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const csvData = e.target.result;
+                    
+                    // Parse CSV data
+                    const parsedData = parseCSV(csvData);
+                    
+                    if (parsedData.length === 0) {
+                        throw new Error('No data found in the CSV file.');
+                    }
+                    
+                    // Process the parsed data
+                    processData(parsedData);
+                } catch (error) {
+                    loadingIndicator.style.display = 'none';
+                    fileError.textContent = 'Error processing CSV file: ' + error.message;
+                    fileError.style.display = 'block';
+                }
+            };
+            
+            reader.onerror = function() {
+                loadingIndicator.style.display = 'none';
+                fileError.textContent = 'Error reading the file.';
+                fileError.style.display = 'block';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Parse CSV data
+        function parseCSV(csvText) {
+            const lines = csvText.split(/\r\n|\n/);
+            const result = [];
+            
+            // Get headers (first line)
+            const headers = lines[0].split(',').map(header => header.replace(/^"|"$/g, '').trim());
+            
+            // Parse data rows
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                // Handle quoted fields with commas
+                const row = {};
+                let inQuotes = false;
+                let currentField = '';
+                let fieldIndex = 0;
+                
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    
+                    if (char === '"' && (j === 0 || lines[i][j-1] !== '\\')) {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        // End of field
+                        row[headers[fieldIndex]] = currentField.replace(/^"|"$/g, '');
+                        currentField = '';
+                        fieldIndex++;
+                    } else {
+                        currentField += char;
+                    }
+                }
+                
+                // Last field
+                row[headers[fieldIndex]] = currentField.replace(/^"|"$/g, '');
+                
+                result.push(row);
+            }
+            
+            return result;
+        }
+
+        // Process Excel file
+        function processExcelFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    if (typeof XLSX === 'undefined') {
+                        throw new Error('Excel library not loaded. Please refresh and try again.');
+                    }
+                    
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Get first sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert to JSON
+                    const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (parsedData.length <= 1) {
+                        throw new Error('No data found in the Excel file.');
+                    }
+                    
+                    // Extract headers
+                    const headers = parsedData[0];
+                    
+                    // Create array of objects
+                    const jsonData = [];
+                    for (let i = 1; i < parsedData.length; i++) {
+                        const row = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            row[headers[j]] = parsedData[i][j];
+                        }
+                        jsonData.push(row);
+                    }
+                    
+                    // Process the parsed data
+                    processData(jsonData);
+                } catch (error) {
+                    loadingIndicator.style.display = 'none';
+                    fileError.textContent = 'Error processing Excel file: ' + error.message;
+                    fileError.style.display = 'block';
+                }
+            };
+            
+            reader.onerror = function() {
+                loadingIndicator.style.display = 'none';
+                fileError.textContent = 'Error reading the file.';
+                fileError.style.display = 'block';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Process parsed data
+        function processData(data) {
+            // Store data
+            fileData = data;
+            
+            // Extract headers
+            if (fileData.length > 0) {
+                allHeaders = Object.keys(fileData[0]);
+            } else {
+                allHeaders = [];
+            }
+            
+            // Reset selected headers
+            selectedHeaders = [];
+            
+            // Identify numeric and text columns
+            detectColumnTypes();
+            
+            // Populate header options
+            populateHeaderOptions();
+            
+            // Populate numeric column dropdown
+            populateNumericColumnDropdown();
+            
+            // Populate text column dropdown
+            populateTextColumnDropdown();
+            
+            // Show dropdown container
+            dropdownContainer.style.display = 'block';
+            
+            // Update selected headers display
+            updateSelectedHeadersDisplay();
+            
+            // Show numeric filter if numeric columns exist
+            if (numericColumns.length > 0) {
+                numericFilter.style.display = 'block';
+            } else {
+                numericFilter.style.display = 'none';
+            }
+            
+            // Show text search filter
+            textSearchFilter.style.display = 'block';
+            
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Detect column types (numeric vs text)
+        function detectColumnTypes() {
+            numericColumns = [];
+            textColumns = [];
+            columnMinMax = {};
+            
+            if (fileData.length === 0) return;
+            
+            allHeaders.forEach(header => {
+                let numericCount = 0;
+                let min = Infinity;
+                let max = -Infinity;
+                
+                // Check if column has numeric values
+                for (let i = 0; i < fileData.length; i++) {
+                    if (!fileData[i]) continue;
+                    
+                    const value = fileData[i][header];
+                    if (value === undefined || value === null || value === '') continue;
+                    
+                    const numValue = parseFloat(value);
+                    
+                    if (!isNaN(numValue)) {
+                        numericCount++;
+                        min = Math.min(min, numValue);
+                        max = Math.max(max, numValue);
+                    }
+                }
+                
+                // If more than 70% of non-empty values are numeric, consider it a numeric column
+                const nonEmptyCount = fileData.filter(row => row && row[header] !== undefined && row[header] !== null && row[header] !== '').length;
+                
+                if (numericCount > 0 && nonEmptyCount > 0 && (numericCount / nonEmptyCount) > 0.7) {
+                    numericColumns.push(header);
+                    columnMinMax[header] = { min: min, max: max };
+                }
+                
+                // All columns can be used for text search
+                textColumns.push(header);
+            });
+        }
+
+        // Populate numeric column dropdown
+        function populateNumericColumnDropdown() {
+            // Clear existing options
+            numericColumnSelect.innerHTML = '<option value="">Select a numeric column</option>';
+            
+            // Add each numeric column as an option
+            numericColumns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                numericColumnSelect.appendChild(option);
+            });
+        }
+        
+        // Populate text column dropdown
+        function populateTextColumnDropdown() {
+            // Clear existing options
+            textColumnSelect.innerHTML = '<option value="">Select a column to search</option>';
+            
+            // Add each column as an option
+            allHeaders.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                textColumnSelect.appendChild(option);
+            });
+        }
+
+        // Handle "Back to Arrow" button click
+document.getElementById('back-to-arrow-button').addEventListener('click', function() {
+    window.location.href = '/';  // This assumes the main Arrow page is at ../index.html
+});
+
+        // Handle numeric column selection
+        numericColumnSelect.addEventListener('change', function() {
+            selectedNumericColumn = this.value;
+            
+            if (selectedNumericColumn) {
+                // Get min/max values for the selected column
+                const minMaxValues = columnMinMax[selectedNumericColumn];
+                
+                if (minMaxValues) {
+                    // Update slider properties
+                    numericSlider.min = Math.floor(minMaxValues.min);
+                    numericSlider.max = Math.ceil(minMaxValues.max);
+                    numericSlider.value = Math.ceil(minMaxValues.max); // Default to max value
+                    
+                    // Update slider labels
+                    minValue.textContent = Math.floor(minMaxValues.min);
+                    maxValue.textContent = Math.ceil(minMaxValues.max);
+                    currentValue.textContent = Math.ceil(minMaxValues.max);
+                    sliderValueDisplay.textContent = Math.ceil(minMaxValues.max);
+                    
+                    // Update slider value
+                    sliderValue = Math.ceil(minMaxValues.max);
+                    
+                    // Show slider container
+                    sliderContainer.style.display = 'block';
+                } else {
+                    sliderContainer.style.display = 'none';
+                }
+            } else {
+                sliderContainer.style.display = 'none';
+            }
+        });
+
+        // Handle text column selection
+        textColumnSelect.addEventListener('change', function() {
+            selectedTextColumn = this.value;
+        });
+        
+        // Handle text search input
+        textSearchInput.addEventListener('input', function() {
+            textSearchValue = this.value;
+        });
+
+        // Handle slider value change
+        numericSlider.addEventListener('input', function() {
+            sliderValue = parseFloat(this.value);
+            currentValue.textContent = sliderValue;
+            sliderValueDisplay.textContent = sliderValue;
+        });
+
+        // Populate header options
+        function populateHeaderOptions() {
+            // Clear existing options
+            headerOptions.innerHTML = '';
+            
+            // Add each header as a checkbox option
+            allHeaders.forEach(header => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                
+                checkbox.type = 'checkbox';
+                checkbox.value = header;
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (!selectedHeaders.includes(this.value)) {
+                            selectedHeaders.push(this.value);
+                        }
+                    } else {
+                        selectedHeaders = selectedHeaders.filter(h => h !== this.value);
+                    }
+                    
+                    // Update "Select All" checkbox
+                    updateSelectAllCheckbox();
+                    
+                    // Update display
+                    updateSelectedHeadersDisplay();
+                });
+                
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(` ${header}`));
+                headerOptions.appendChild(label);
+            });
+        }
+
+        // Update "Select All" checkbox state
+        function updateSelectAllCheckbox() {
+            const allChecked = selectedHeaders.length === allHeaders.length;
+            const someChecked = selectedHeaders.length > 0 && selectedHeaders.length < allHeaders.length;
+            
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked;
+        }
+
+        // Handle "Select All" checkbox
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = headerOptions.querySelectorAll('input[type="checkbox"]');
+            
+            if (this.checked) {
+                // Select all headers
+                selectedHeaders = [...allHeaders];
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+            } else {
+                // Deselect all headers
+                selectedHeaders = [];
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
+            
+            // Update display
+            updateSelectedHeadersDisplay();
+        });
+
+        // Update selected headers display
+        function updateSelectedHeadersDisplay() {
+            selectedHeadersContainer.innerHTML = '';
+            
+            if (selectedHeaders.length === 0) {
+                selectedHeadersContainer.innerHTML = '<p>No columns selected</p>';
+                searchDataButton.style.display = 'none';
+            } else {
+                selectedHeaders.forEach(header => {
+                    const headerElement = document.createElement('span');
+                    headerElement.textContent = header;
+                    const removeButton = document.createElement('span');
+                    removeButton.textContent = '×';
+                    removeButton.className = 'remove-btn';
+                    removeButton.addEventListener('click', function() {
+                        selectedHeaders = selectedHeaders.filter(h => h !== header);
+                        updateSelectedHeadersDisplay();
+                        const checkbox = headerOptions.querySelector(`input[value="${header}"]`);
+                        if (checkbox) {
+                            checkbox.checked = false;
+                        }
+                        updateSelectAllCheckbox();
+                    });
+                    headerElement.appendChild(removeButton);
+                    selectedHeadersContainer.appendChild(headerElement);
+                });
+                searchDataButton.style.display = 'block';
+            }
+        }
+
+        // Handle search data button click
+        searchDataButton.addEventListener('click', function() {
+            // Filter data based on selected headers and filters
+            filterData();
+            
+            // Display results
+            displayResults();
+        });
+
+        // Filter data based on selected headers and filters
+        function filterData() {
+            filteredData = fileData.filter(row => {
+                // Apply numeric filter
+                if (selectedNumericColumn && sliderValue !== null) {
+                    const value = parseFloat(row[selectedNumericColumn]);
+                    if (isNaN(value) || value > sliderValue) {
+                        return false;
+                    }
+                }
+                
+                // Apply text search filter
+                if (selectedTextColumn && textSearchValue) {
+                    const value = row[selectedTextColumn];
+                    if (!value || !value.toString().toLowerCase().includes(textSearchValue.toLowerCase())) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Update pagination
+            currentPage = 1;
+            totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            updatePaginationControls();
+        }
+
+        // Display results
+        function displayResults() {
+            // Clear previous results
+            resultsHeaders.innerHTML = '';
+            resultsRows.innerHTML = '';
+            
+            // Display selected headers
+            selectedHeaders.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                resultsHeaders.appendChild(th);
+            });
+            
+            // Display data
+            displayPagedResults();
+            
+            // Show results container
+            resultsContainer.style.display = 'block';
+        }
+
+        // Display paged results
+        function displayPagedResults() {
+            // Clear previous rows
+            resultsRows.innerHTML = '';
+            
+            // Calculate start and end indices
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            displayedData = filteredData.slice(startIndex, endIndex);
+            
+            // Display rows
+            displayedData.forEach(row => {
+                const tr = document.createElement('tr');
+                selectedHeaders.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header];
+                    tr.appendChild(td);
+                });
+                resultsRows.appendChild(tr);
+            });
+            
+            // Update pagination info
+            pageStart.textContent = startIndex + 1;
+            pageEnd.textContent = Math.min(endIndex, filteredData.length);
+            totalRecords.textContent = filteredData.length;
+            
+            // Update pagination buttons
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        // Update pagination controls
+        function updatePaginationControls() {
+            // Update pagination info
+            pageStart.textContent = (currentPage - 1) * rowsPerPage + 1;
+            pageEnd.textContent = Math.min(currentPage * rowsPerPage, filteredData.length);
+            totalRecords.textContent = filteredData.length;
+            
+            // Update pagination buttons
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        // Handle download results button click
+        downloadButton.addEventListener('click', function() {
+            if (typeof XLSX === 'undefined') {
+                alert('Excel library not loaded. Please refresh and try again.');
+                return;
+            }
+            
+            // Create a new workbook
+            const workbook = XLSX.utils.book_new();
+            
+            // Create a worksheet
+            const worksheetData = [selectedHeaders];
+            displayedData.forEach(row => {
+                const rowData = selectedHeaders.map(header => row[header]);
+                worksheetData.push(rowData);
+            });
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Results');
+            
+            // Write workbook to file
+            XLSX.writeFile(workbook, 'results.xlsx');
+        });
+
+        // Handle header dropdown button click
+        headerDropdownButton.addEventListener('click', function() {
+            headerDropdown.style.display = headerDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!headerDropdownButton.contains(event.target) && !headerDropdown.contains(event.target)) {
+                headerDropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
