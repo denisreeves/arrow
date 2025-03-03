@@ -5,6 +5,5 @@ requests
 pandas
 numpy
 email-validator
-sqlite3
 bcrypt
 jwt
