@@ -1,12 +1,10 @@
-# database.py
-import sqlite3
+import mysql.connector
 import pandas as pd
 import numpy as np
 from pathlib import Path
 import os
 from typing import Dict, Optional, Union, List, Tuple
 import logging
-
 import os
 import mysql.connector
 from dotenv import load_dotenv
@@ -50,13 +48,15 @@ def init_db():
 init_db()
 
 class Database:
-    def __init__(self, db_path: str = "data/resumes.db"):
+    def __init__(self, host="localhost", user="root", password="", database="resumes"):
         """Initialize database connection."""
-        self.db_path = db_path
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
         self.setup_logging()
-        Path("data").mkdir(exist_ok=True)
-        self.table_created = False
-    
+        self.connect_db()
+
     def setup_logging(self):
         """Set up logging configuration."""
         logging.basicConfig(
@@ -66,153 +66,74 @@ class Database:
         )
         self.logger = logging.getLogger(__name__)
 
-    def create_table_from_df(self, df: pd.DataFrame) -> None:
+    def connect_db(self):
+        """Connect to MySQL database."""
+        try:
+            self.conn = mysql.connector.connect(
+                host=self.host,
+                user=self.user,
+                password=self.password
+            )
+            self.cursor = self.conn.cursor()
+            self.create_database()
+        except mysql.connector.Error as err:
+            self.logger.error(f"Error: {err}")
+            raise
+
+    def create_database(self):
+        """Create database if not exists."""
+        try:
+            self.cursor.execute(f"CREATE DATABASE IF NOT EXISTS {self.database}")
+            self.conn.database = self.database
+        except mysql.connector.Error as err:
+            self.logger.error(f"Database creation error: {err}")
+            raise
+
+    def create_table_from_df(self, df: pd.DataFrame, table_name: str) -> None:
         """Dynamically create table based on DataFrame columns."""
         try:
             columns = []
             for col in df.columns:
                 if df[col].dtype in [np.float64, np.int64]:
-                    col_type = "REAL"
-                else:
+                    col_type = "DOUBLE"
+                elif df[col].dtype == object:
                     col_type = "TEXT"
-                columns.append(f'"{col}" {col_type}')
-            
-            columns_sql = ", ".join(columns)
-            
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("DROP TABLE IF EXISTS resumes")
-                create_table_sql = f"CREATE TABLE resumes ({columns_sql})"
-                cursor.execute(create_table_sql)
-                
-                # Create indexes for performance
-                for col in df.columns:
-                    try:
-                        cursor.execute(f'CREATE INDEX "idx_{col}" ON resumes("{col}")')
-                    except sqlite3.OperationalError as e:
-                        self.logger.warning(f"Failed to create index for {col}: {e}")
-                
-                conn.commit()
-                self.table_created = True
-        except Exception as e:
-            self.logger.error(f"Error creating table: {e}")
+                else:
+                    col_type = "VARCHAR(255)"
+                columns.append(f"`{col}` {col_type}")
+
+            columns_str = ", ".join(columns)
+            create_table_sql = f"CREATE TABLE IF NOT EXISTS `{table_name}` (id INT AUTO_INCREMENT PRIMARY KEY, {columns_str})"
+            self.cursor.execute(create_table_sql)
+            self.conn.commit()
+        except mysql.connector.Error as err:
+            self.logger.error(f"Table creation error: {err}")
             raise
 
-    def clean_numeric(self, value: Union[str, float, int]) -> float:
-        """Clean and convert numeric values."""
-        if pd.isna(value):
-            return np.nan
+    def insert_data_from_df(self, df: pd.DataFrame, table_name: str) -> None:
+        """Insert data from DataFrame into table."""
         try:
-            if isinstance(value, str):
-                # Remove common suffixes and clean the string
-                value = value.lower()
-                for suffix in ['lpa', 'years', 'k', 'inr', '$']:
-                    value = value.replace(suffix, '')
-                value = value.strip()
-            return float(value)
-        except (ValueError, TypeError):
-            return np.nan
+            for _, row in df.iterrows():
+                values = tuple(row)
+                placeholders = ", ".join(["%s"] * len(row))
+                insert_sql = f"INSERT INTO `{table_name}` ({', '.join(df.columns)}) VALUES ({placeholders})"
+                self.cursor.execute(insert_sql, values)
 
-    def clean_text(self, value: str) -> str:
-        """Clean text values."""
-        if pd.isna(value):
-            return ""
-        return str(value).strip()
+            self.conn.commit()
+        except mysql.connector.Error as err:
+            self.logger.error(f"Data insertion error: {err}")
+            raise
 
-    def process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Process and clean dataframe before insertion."""
-        processed = df.copy()
-        
-        # Clean numeric columns
-        numeric_cols = processed.select_dtypes(include=[np.number]).columns
-        for col in numeric_cols:
-            processed[col] = processed[col].apply(self.clean_numeric)
-        
-        # Clean text columns
-        text_cols = processed.select_dtypes(include=['object']).columns
-        for col in text_cols:
-            processed[col] = processed[col].apply(self.clean_text)
-        
-        return processed
-
-    def insert_data(self, file_path: str) -> Tuple[bool, str]:
-        """Insert data from CSV/Excel file into the database."""
+    def query_data(self, query: str) -> List[Tuple]:
+        """Execute a query and return the result."""
         try:
-            # Read file based on extension
-            if file_path.endswith('.csv'):
-                df = pd.read_csv(file_path)
-            elif file_path.endswith(('.xlsx', '.xls')):
-                df = pd.read_excel(file_path)
-            else:
-                raise ValueError("Unsupported file format")
-            
-            # Create table if not exists
-            if not self.table_created:
-                self.create_table_from_df(df)
-            
-            # Process dataframe
-            df_cleaned = self.process_dataframe(df)
-            
-            # Insert into database
-            with sqlite3.connect(self.db_path) as conn:
-                df_cleaned.to_sql('resumes', conn, if_exists='replace', index=False)
-            
-            self.logger.info(f"Successfully inserted {len(df_cleaned)} records")
-            return True, f"Successfully inserted {len(df_cleaned)} records"
-        except Exception as e:
-            self.logger.error(f"Error inserting data: {e}")
-            return False, f"Error inserting data: {str(e)}"
+            self.cursor.execute(query)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.logger.error(f"Query execution error: {err}")
+            raise
 
-    def search_resumes(self, filters: Dict[str, Union[str, tuple, List[str]]]) -> pd.DataFrame:
-        """Search resumes based on provided filters."""
-        try:
-            query = "SELECT * FROM resumes WHERE 1=1"
-            params = []
-            
-            for column, value in filters.items():
-                if value:
-                    if isinstance(value, tuple):  # Range filter
-                        query += f' AND "{column}" BETWEEN ? AND ?'
-                        params.extend(value)
-                    elif isinstance(value, list):  # Multi-select filter
-                        placeholders = ','.join(['?' for _ in value])
-                        query += f' AND "{column}" IN ({placeholders})'
-                        params.extend(value)
-                    else:  # Text search
-                        query += f' AND LOWER("{column}") LIKE LOWER(?)'
-                        params.append(f"%{value}%")
-            
-            with sqlite3.connect(self.db_path) as conn:
-                df = pd.read_sql_query(query, conn, params=params)
-            return df
-        except Exception as e:
-            self.logger.error(f"Error searching resumes: {e}")
-            return pd.DataFrame()
-
-    def get_unique_values(self, column: str) -> List[str]:
-        """Get unique values for a column."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                query = f'SELECT DISTINCT "{column}" FROM resumes WHERE "{column}" IS NOT NULL'
-                df = pd.read_sql_query(query, conn)
-                return sorted(df[column].dropna().unique().tolist())
-        except Exception as e:
-            self.logger.error(f"Error getting unique values for {column}: {e}")
-            return []
-
-    def get_column_stats(self, column: str) -> Dict[str, float]:
-        """Get statistics for numeric columns."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                query = f'SELECT MIN("{column}"), MAX("{column}"), AVG("{column}") FROM resumes'
-                cursor = conn.execute(query)
-                min_val, max_val, avg_val = cursor.fetchone()
-                return {
-                    "min": float(min_val or 0),
-                    "max": float(max_val or 0),
-                    "avg": float(avg_val or 0)
-                }
-        except Exception as e:
-            self.logger.error(f"Error getting column stats for {column}: {e}")
-            return {"min": 0, "max": 0, "avg": 0}
-        
+    def close_connection(self):
+        """Close the database connection."""
+        self.cursor.close()
+        self.conn.close()
