@@ -8,3 +8,4 @@ email-validator
 bcrypt
 jwt
 python-dotenv
+mysql
