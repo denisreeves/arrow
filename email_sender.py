@@ -8,7 +8,6 @@ import uuid
 import hashlib
 import jwt
 import json
-import sqlite3
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, request, jsonify, render_template, url_for, send_from_directory, session
@@ -25,6 +24,45 @@ from flask import Response, session
 import numpy as np
 from pathlib import Path
 #from transformers import pipeline
+import mysql.connector
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Flask & JWT Secret Keys
+SECRET_KEY = os.getenv("SECRET_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET")
+
+# Database Configuration
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+
+# SMTP Email Configuration
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+# Connect to MySQL
+def connect_db():
+    return mysql.connector.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
+    )
+
+# Example function: Get user by email
+def get_user_by_email(email):
+    conn = connect_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
 
 
 # Suppress warnings
@@ -1237,28 +1275,6 @@ if __name__ == '__main__':
             ))
             conn.commit()
         print("Default admin user created: admin@example.com / admin123")
-    import sqlite3
-    import os
     
-    DATABASE_PATH = os.environ.get("DATABASE_URL", "data/users.db")
-    
-    def init_db():
-        """Create the database tables if they don’t exist."""
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-            ''')
-            conn.commit()
-        print("✅ Database initialized successfully!")
-    
-    # Run this when the app starts
-    init_db()
     # Run the app
     app.run(debug=True)
