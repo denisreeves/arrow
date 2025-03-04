@@ -64,6 +64,13 @@ def get_user_by_email(email):
     conn.close()
     return user
 
+def get_user_by_id(user_id):
+    conn = connect_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
 
 # Suppress warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -85,30 +92,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Secret key for JWT tokens
 JWT_SECRET = "your-secret-key"  # In production, use a secure secret and environment variables
 
-# Database setup
-DATABASE_PATH = 'data/users.db'
-
-# Load AI model for email content generation
-#generator = pipeline("text-generation", model="gpt2")
-
-# Create data directory if it doesn't exist
-Path("data").mkdir(exist_ok=True)
-
-def init_db():
-    """Initialize the database with users table"""
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-        ''')
-        conn.commit()
-
 # In-memory storage for uploaded email lists (not persisting these for now)
 email_lists = {}
 
@@ -124,28 +107,6 @@ def is_valid_email(email):
     """Validate email format using regex."""
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_regex, email) is not None
-
-def get_user_by_id(user_id):
-    """Get user by ID from database"""
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-        user = cursor.fetchone()
-        if user:
-            return dict(user)
-        return None
-
-def get_user_by_email(email):
-    """Get user by email from database"""
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-        user = cursor.fetchone()
-        if user:
-            return dict(user)
-        return None
 
 # Simple email content generation (placeholder for AI model)
 def generate_email_content(prompt):
@@ -250,7 +211,7 @@ def send_welcome_email(email, name, password):
         # Email configuration (replace with your SMTP server details)
         smtp_server = "smtp.gmail.com"  # Replace with your SMTP server
         smtp_port = 587  # Replace with your SMTP port
-        sender_email = "krixh15@gmail.com  "  # Replace with your sender email
+        sender_email = "krixh15@gmail.com"  # Replace with your sender email
         sender_password = "wywy rwgt bxak frxe"  # Replace with your sender email password
 
         # Create the email content
@@ -311,20 +272,21 @@ def create_user_admin(current_admin):
         # Create new user
         user_id = str(uuid.uuid4())
         
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-            INSERT INTO users (id, name, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (
-                user_id,
-                data['name'],
-                email,
-                hash_password(data['password']),
-                datetime.now().isoformat()
-            ))
-            conn.commit()
-        
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO users (id, name, email, password, created_at)
+        VALUES (%s, %s, %s, %s, %s)
+        ''', (
+            user_id,
+            data['name'],
+            email,
+            hash_password(data['password']),
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+    
         # Send welcome email with login credentials
         send_welcome_email(
             email=data['email'],
@@ -346,12 +308,12 @@ def create_user_admin(current_admin):
 def get_all_users(current_admin):
     """Get all users for admin"""
     try:
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, name, email, created_at FROM users")
-            users = [dict(row) for row in cursor.fetchall()]
-            
+        conn = connect_db()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, name, email, created_at FROM users")
+        users = cursor.fetchall()
+        conn.close()
+        
         return jsonify({
             'success': True,
             'users': users
@@ -373,11 +335,12 @@ def delete_user(current_admin, user_id):
         if user['email'] == 'admin@example.com':
             return jsonify({'success': False, 'message': 'Cannot delete admin user'}), 403
         
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-            conn.commit()
-            
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        conn.close()
+        
         return jsonify({
             'success': True,
             'message': 'User deleted successfully'
@@ -411,20 +374,21 @@ def create_user(current_admin):
         # Create new user
         user_id = str(uuid.uuid4())
         
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-            INSERT INTO users (id, name, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (
-                user_id,
-                data['name'],
-                email,
-                hash_password(data['password']),
-                datetime.now().isoformat()
-            ))
-            conn.commit()
-        
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO users (id, name, email, password, created_at)
+        VALUES (%s, %s, %s, %s, %s)
+        ''', (
+            user_id,
+            data['name'],
+            email,
+            hash_password(data['password']),
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+    
         # Send welcome email with login credentials
         send_welcome_email(
             email=data['email'],
@@ -464,7 +428,7 @@ def update_user(current_admin, user_id):
     update_values = []
     
     if data.get('name'):
-        update_fields.append("name = ?")
+        update_fields.append("name = %s")
         update_values.append(data['name'])
         
     if data.get('email'):
@@ -479,11 +443,11 @@ def update_user(current_admin, user_id):
         if existing_user and existing_user['id'] != user_id:
             return jsonify({'success': False, 'message': 'Email already in use by another user'}), 400
             
-        update_fields.append("email = ?")
+        update_fields.append("email = %s")
         update_values.append(email)
         
     if data.get('password'):
-        update_fields.append("password = ?")
+        update_fields.append("password = %s")
         update_values.append(hash_password(data['password']))
     
     if not update_fields:
@@ -491,13 +455,14 @@ def update_user(current_admin, user_id):
     
     try:
         # Update the user
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = ?"
-            update_values.append(user_id)
-            cursor.execute(query, update_values)
-            conn.commit()
-            
+        conn = connect_db()
+        cursor = conn.cursor()
+        query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s"
+        update_values.append(user_id)
+        cursor.execute(query, update_values)
+        conn.commit()
+        conn.close()
+        
         return jsonify({
             'success': True,
             'message': 'User updated successfully'
@@ -542,30 +507,30 @@ def get_filtered_users(current_admin):
 
         # Apply name filter
         if name_filter:
-            query += " AND LOWER(name) LIKE ?"
+            query += " AND LOWER(name) LIKE %s"
             params.append(f"%{name_filter}%")
 
         # Apply email filter
         if email_filter:
-            query += " AND LOWER(email) LIKE ?"
+            query += " AND LOWER(email) LIKE %s"
             params.append(f"%{email_filter}%")
 
         # Apply created_after filter
         if created_after:
-            query += " AND created_at >= ?"
+            query += " AND created_at >= %s"
             params.append(created_after)
 
         # Apply created_before filter
         if created_before:
-            query += " AND created_at <= ?"
+            query += " AND created_at <= %s"
             params.append(created_before)
 
         # Execute the query
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute(query, params)
-            users = [dict(row) for row in cursor.fetchall()]
+        conn = connect_db()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, params)
+        users = cursor.fetchall()
+        conn.close()
 
         return jsonify({
             'success': True,
@@ -644,30 +609,31 @@ def get_email_list_details(current_admin, list_id):
 def get_statistics():
     """Return system statistics"""
     try:
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+        conn = connect_db()
+        cursor = conn.cursor(dictionary=True)
 
-            # Get user count
-            cursor.execute("SELECT COUNT(*) AS total_users FROM users")
-            total_users = cursor.fetchone()["total_users"]
+        # Get user count
+        cursor.execute("SELECT COUNT(*) AS total_users FROM users")
+        total_users = cursor.fetchone()["total_users"]
 
-            # Check if sent_emails table exists before querying
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sent_emails'")
-            table_exists = cursor.fetchone()
-            
-            total_emails = 0
-            if table_exists:
-                cursor.execute("SELECT COUNT(*) AS total_emails FROM sent_emails")
-                total_emails = cursor.fetchone()["total_emails"]
+        # Check if sent_emails table exists before querying
+        cursor.execute("SHOW TABLES LIKE 'sent_emails'")
+        table_exists = cursor.fetchone()
+        
+        total_emails = 0
+        if table_exists:
+            cursor.execute("SELECT COUNT(*) AS total_emails FROM sent_emails")
+            total_emails = cursor.fetchone()["total_emails"]
 
-            return jsonify({
-                "success": True,
-                "statistics": {
-                    "total_users": total_users,
-                    "total_emails": total_emails
-                }
-            })
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "statistics": {
+                "total_users": total_users,
+                "total_emails": total_emails
+            }
+        })
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -947,19 +913,20 @@ def register():
         # Create new user
         user_id = str(uuid.uuid4())
         
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-            INSERT INTO users (id, name, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (
-                user_id,
-                data['name'],
-                email,
-                hash_password(data['password']),
-                datetime.now().isoformat()
-            ))
-            conn.commit()
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO users (id, name, email, password, created_at)
+        VALUES (%s, %s, %s, %s, %s)
+        ''', (
+            user_id,
+            data['name'],
+            email,
+            hash_password(data['password']),
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
         
         return jsonify({'success': True, 'message': 'User registered successfully'}), 201
     
@@ -1234,47 +1201,26 @@ def create_admin():
         # Create admin user
         admin_id = str(uuid.uuid4())
         
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-            INSERT INTO users (id, name, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (
-                admin_id,
-                'Admin User',
-                'admin@example.com',
-                hash_password(data['password']),
-                datetime.now().isoformat()
-            ))
-            conn.commit()
-            
+        conn = connect_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO users (id, name, email, password, created_at)
+        VALUES (%s, %s, %s, %s, %s)
+        ''', (
+            admin_id,
+            'Admin User',
+            'admin@example.com',
+            hash_password(data['password']),
+            datetime.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+        
         return jsonify({'success': True, 'message': 'Admin user created successfully'}), 201
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error creating admin user: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    # Initialize the database
-    init_db()
-    
-    # Check if admin user exists, create if not
-    admin = get_user_by_email('admin@example.com')
-    if not admin:
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            admin_id = str(uuid.uuid4())
-            cursor.execute('''
-            INSERT INTO users (id, name, email, password, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (
-                admin_id,
-                'Admin User',
-                'admin@example.com',
-                hash_password('admin123'),
-                datetime.now().isoformat()
-            ))
-            conn.commit()
-        print("Default admin user created: admin@example.com / admin123")
-    
     # Run the app
     app.run(debug=True)
