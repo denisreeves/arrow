@@ -2,7 +2,6 @@ Flask
 flask-cors
 gunicorn
 requests
-sqlite3
 pandas
 numpy
 email-validator
